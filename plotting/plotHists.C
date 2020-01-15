@@ -1,5 +1,16 @@
 /*****************************************************/
+/* plotHists.C                                       */
+/* Usage: root -l -b -q plotHists.C                  */
+/* Description: Contains helper functions to create
+   TH1Fs of any variable/ arbitrary cuts with the 
+   weights/lumi/cross-sections necessary for the 
+   resulting histogram to be number of events.
 
+   The main function plotHists.C illustrates how to do
+   this for the H1_m variable, and writes the TH1Fs
+   to an output ROOT file and saves each sample's
+   histogram to images.                              */
+/*****************************************************/
 
 #include "TCanvas.h"
 #include "TROOT.h"
@@ -16,6 +27,13 @@
 #define MAKEHISTS_C_INCL
 
 /*****************************************************/
+
+/* Using the file located at inputDirectory and the tree
+   treePath, draws the branch "variable" into a TH1F
+   with the name histName and returns a pointer to the TH1F.
+   Applies the TStrings cut and weight. The resulting
+   TH1F has (bins) number of bins
+   and ranges from the values low to high. */
 
 TH1F* makeHistogram(TString variable,
 		    TString histName,
@@ -71,6 +89,10 @@ void applyLegStyle(TLegend *leg)
 
 /*****************************************************/
 
+/* Plots histogram TH1F h, with axes labels xLabel and
+   yLabel, with the legend entry legendEntry and saves it
+   to a file with the directory and name outfileDirectory
+   (include the extension). */
 
 int makeHistPlot(TH1F *h,
 		 TString xLabel,
@@ -78,8 +100,6 @@ int makeHistPlot(TH1F *h,
 		 TString legendEntry,
 		 TString outfileDirectory)
 {
-  gROOT->LoadMacro("CMS_lumi.C");
-
   TCanvas* Tcan = new TCanvas("Tcan","", 100, 20, 800, 600);
   Tcan->cd();     /* Set current canvas */
   Tcan->SetFillColor(0);
@@ -89,9 +109,14 @@ int makeHistPlot(TH1F *h,
 
   h->Draw("HIST");
 
+  // Suppress statistics box
+  h->SetStats(0);
+
+  // Set axes labels
   h->GetXaxis()->SetTitle(xLabel);
   h->GetYaxis()->SetTitle(yLabel);
 
+  // Format the legend
   leg->AddEntry(h, legendEntry, "l");
   leg->Draw();
   
@@ -104,17 +129,48 @@ int makeHistPlot(TH1F *h,
 
 /*****************************************************/
 
+/* Creates TH1F objects, writes them to a file, and plots
+   each one separately. */
+
 int plotHists(void)
 {
-  // Make the histogram
-  TH1F *h_H1_m = makeHistogram("H1_m", "H1_m", "", "",
-			       "bbbbTree",
-			       "/uscms/home/menendez/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_data_BTagCSV_Run2016_ALL.root",
-			       300, 0, 800);
-  // Plot it
-  makeHistPlot(h_H1_m, "H1_m", "Events", "Higgs 1 mass", "test.png");
+  // The histograms will be written into this ROOT file.
+  TString outputFileDirectory = "histograms.root";
+
+  // SIGNAL: weight is 1
+  TH1F *h_H1_m_data = makeHistogram("H1_m", "H1_m_data", "", "1",
+				    "bbbbTree",
+				    "/uscms/home/menendez/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_data_BTagCSV_Run2016_ALL.root",
+				    300, 0, 800);
+  
+  // TT: weight is norm_weight times cross-section (xs) times the luminosity (in femtobarns)
+  TH1F *h_H1_m_tt = makeHistogram("H1_m", "H1_m_tt", "", "norm_weight * xs * 35920",
+				  "bbbbTree",
+				  "/uscms/home/menendez/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",
+				  300, 0, 800);
+
+  // QCD: weight is norm_weight times cross-section (xs) times the luminosity (in femtobarns)
+  TH1F *h_H1_m_QCD = makeHistogram("H1_m", "H1_m_QCD", "", "norm_weight * xs * 35920",
+				   "bbbbTree",
+				   "/uscms/home/skwan/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_QCD_HTall_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root",
+				   300, 0, 800);
+
+  // Create an output ROOT file, writing histograms to the file
+  TFile *fOut = new TFile(outputFileDirectory, "RECREATE");
+  if ( fOut->IsOpen() ) printf("File opened successfully\n");
+  fOut->cd();
+  h_H1_m_data->Write();
+  h_H1_m_tt->Write();
+  h_H1_m_QCD->Write();
+  fOut->Close();
+
+  // Plotting
+  makeHistPlot(h_H1_m_data, "H1_m_data", "Events", "Higgs 1 mass", "H1_m_data.png");
+  makeHistPlot(h_H1_m_tt, "H1_m_tt", "Events", "Higgs 1 mass", "H1_m_tt.png");
+  makeHistPlot(h_H1_m_QCD, "H1_m_QDC", "Events", "Higgs 1 mass", "H1_m_QCD.png");
 
   return 0;
 }
+
 
 #endif
