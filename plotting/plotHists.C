@@ -107,7 +107,7 @@ int makeHistPlot(TH1F *h,
   TLegend *leg = new TLegend(0.60,0.75,0.85,0.9);
   applyLegStyle(leg);
 
-  h->Draw("HIST");
+  h->Draw("E HIST");
 
   // Suppress statistics box
   h->SetStats(0);
@@ -127,6 +127,52 @@ int makeHistPlot(TH1F *h,
 
 }
 
+/*****************************************************/
+
+
+int makeOverlayHistPlot(TH1F *h_data,
+			TH1F *h_MC_bkg,
+			TString xLabel,
+			TString yLabel,
+			TString outfileDirectory)
+{
+  TCanvas* Tcan = new TCanvas("Tcan","", 100, 20, 800, 600);
+  Tcan->cd();     /* Set current canvas */
+  Tcan->SetFillColor(0);
+
+  TLegend *leg = new TLegend(0.60,0.75,0.85,0.9);
+  applyLegStyle(leg);
+
+  // Set axes labels                                                                                   
+  h_data->GetXaxis()->SetTitle(xLabel);
+  h_data->GetYaxis()->SetTitle(yLabel);
+
+  // Change colors
+  h_data->SetMarkerColor(kBlue);
+  h_data->SetLineWidth(1);
+  h_data->SetLineColor(kBlue+2);
+
+  h_MC_bkg->SetMarkerColor(kRed);
+  h_MC_bkg->SetLineWidth(1);
+  h_MC_bkg->SetLineColor(kRed+2);
+
+  h_data->Draw("E HIST");
+  h_MC_bkg->Draw("E HIST SAME");
+  
+
+  // Format and draw the legend                          
+  leg->AddEntry(h_data, "Data", "l");
+  leg->AddEntry(h_MC_bkg, "MC background (tt and QCD)", "l");
+  leg->Draw();
+
+  Tcan->SaveAs(outfileDirectory);
+
+  delete Tcan;
+  
+  
+  return 0;
+
+}
 /*****************************************************/
 
 /* Creates TH1F objects, writes them to a file, and plots
@@ -164,13 +210,21 @@ int plotHists(void)
   h_H1_m_QCD->Write();
   fOut->Close();
 
-  // Plotting
+  // Plotting separately
   makeHistPlot(h_H1_m_data, "H1_m_data", "Events", "Higgs 1 mass", "H1_m_data.png");
   makeHistPlot(h_H1_m_tt, "H1_m_tt", "Events", "Higgs 1 mass", "H1_m_tt.png");
   makeHistPlot(h_H1_m_QCD, "H1_m_QDC", "Events", "Higgs 1 mass", "H1_m_QCD.png");
 
+  // Plotting overlay: SM and backgrounds
+  TH1F *bkg = (TH1F*) h_H1_m_tt->Clone("bkg");
+  bkg->Add(h_H1_m_QCD);
+
+  makeOverlayHistPlot(h_H1_m_data, bkg, "Higgs 1 mass", "Events",
+		      "overlay.png");
+
   return 0;
 }
+
 
 
 #endif
