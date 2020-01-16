@@ -9,6 +9,7 @@
 #include "TTree.h"
 #include "TH1D.h"
 #include "TH1F.h"
+#include "TGraphAsymmErrors.h"
 
 #include "analysis_utils.h" // jet_t, init_jet_t
 #include "input_tree.h"
@@ -16,6 +17,7 @@
 #include "bbbb_functions.h"
 
 using namespace std;
+
 
 int main(int argc, char** argv)
 {
@@ -54,6 +56,43 @@ int main(int argc, char** argv)
 
     const float btag_WP_medium = 0.3093; // for DeepJet
 
+    // Open the file with the histograms needed for the trigger efficiency and scale factors
+    TFile *fTrig =  TFile::Open("/uscms/home/skwan/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/trigger/TriggerEfficiencies.root");
+    TGraphAsymmErrors *SingleMuon_Double90Quad30_Efficiency_L1filter = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Double90Quad30_Efficiency_L1filter");
+    TGraphAsymmErrors *SingleMuon_Double90Quad30_Efficiency_QuadCentralJet30 = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Double90Quad30_Efficiency_QuadCentralJet30");
+    TGraphAsymmErrors *SingleMuon_Double90Quad30_Efficiency_DoubleCentralJet90 = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Double90Quad30_Efficiency_DoubleCentralJet90");
+    TGraphAsymmErrors *SingleMuon_Double90Quad30_Efficiency_BTagCaloCSVp087Triple = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Double90Quad30_Efficiency_BTagCaloCSVp087Triple");
+    TGraphAsymmErrors *SingleMuon_Double90Quad30_Efficiency_QuadPFCentralJetLooseID30  = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Double90Quad30_Efficiency_QuadPFCentralJetLooseID30");
+    TGraphAsymmErrors *SingleMuon_Double90Quad30_Efficiency_DoublePFCentralJetLooseID90 = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Double90Quad30_Efficiency_DoublePFCentralJetLooseID90");
+
+    TGraphAsymmErrors *SingleMuon_Quad45_Efficiency_L1filter = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Quad45_Efficiency_L1filter");
+    TGraphAsymmErrors *SingleMuon_Quad45_Efficiency_QuadCentralJet45 = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Quad45_Efficiency_QuadCentralJet45");
+    TGraphAsymmErrors *SingleMuon_Quad45_Efficiency_BTagCaloCSVp087Triple = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Quad45_Efficiency_BTagCaloCSVp087Triple");
+    TGraphAsymmErrors *SingleMuon_Quad45_Efficiency_QuadPFCentralJetLooseID45 = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Quad45_Efficiency_QuadPFCentralJetLooseID45");
+
+    TGraphAsymmErrors *SingleMuon_And_Efficiency_L1filterQuad45 = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_And_Efficiency_L1filterQuad45");
+    TGraphAsymmErrors *SingleMuon_And_Efficiency_QuadCentralJet45 = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_And_Efficiency_QuadCentralJet45");
+    TGraphAsymmErrors *SingleMuon_And_Efficiency_BTagCaloCSVp087Triple = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_And_Efficiency_BTagCaloCSVp087Triple");
+    TGraphAsymmErrors *SingleMuon_And_Efficiency_QuadPFCentralJetLooseID45 = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_And_Efficiency_QuadPFCentralJetLooseID45");
+
+    TGraphAsymmErrors *TTbar_Double90Quad30_Efficiency_L1filter = (TGraphAsymmErrors*) fTrig->Get("TTbar_Double90Quad30_Efficiency_L1filter");
+    TGraphAsymmErrors *TTbar_Double90Quad30_Efficiency_QuadCentralJet30 = (TGraphAsymmErrors*) fTrig->Get("TTbar_Double90Quad30_Efficiency_QuadCentralJet30");
+    TGraphAsymmErrors *TTbar_Double90Quad30_Efficiency_DoubleCentralJet90 = (TGraphAsymmErrors*) fTrig->Get("TTbar_Double90Quad30_Efficiency_DoubleCentralJet90");
+    TGraphAsymmErrors *TTbar_Double90Quad30_Efficiency_BTagCaloCSVp087Triple = (TGraphAsymmErrors*) fTrig->Get("TTbar_Double90Quad30_Efficiency_BTagCaloCSVp087Triple");
+    TGraphAsymmErrors *TTbar_Double90Quad30_Efficiency_QuadPFCentralJetLooseID30 = (TGraphAsymmErrors*) fTrig->Get("TTbar_Double90Quad30_Efficiency_QuadPFCentralJetLooseID30");
+    TGraphAsymmErrors *TTbar_Double90Quad30_Efficiency_DoublePFCentralJetLooseID90 = (TGraphAsymmErrors*) fTrig->Get("TTbar_Double90Quad30_Efficiency_DoublePFCentralJetLooseID90");
+
+    TGraphAsymmErrors *TTbar_Quad45_Efficiency_L1filter = (TGraphAsymmErrors*) fTrig->Get("TTbar_Quad45_Efficiency_L1filter");
+    TGraphAsymmErrors *TTbar_Quad45_Efficiency_QuadCentralJet45 = (TGraphAsymmErrors*) fTrig->Get("TTbar_Quad45_Efficiency_QuadCentralJet45");
+    TGraphAsymmErrors *TTbar_Quad45_Efficiency_BTagCaloCSVp087Triple = (TGraphAsymmErrors*) fTrig->Get("TTbar_Quad45_Efficiency_BTagCaloCSVp087Triple");
+    TGraphAsymmErrors *TTbar_Quad45_Efficiency_QuadPFCentralJetLooseID45 = (TGraphAsymmErrors*) fTrig->Get("TTbar_Quad45_Efficiency_QuadPFCentralJetLooseID45");
+
+    TGraphAsymmErrors *TTbar_And_Efficiency_L1filterQuad45 = (TGraphAsymmErrors*) fTrig->Get("TTbar_And_Efficiency_L1filterQuad45");
+    TGraphAsymmErrors *TTbar_And_Efficiency_QuadCentralJet45 = (TGraphAsymmErrors*) fTrig->Get("TTbar_And_Efficiency_QuadCentralJet45");
+    TGraphAsymmErrors *TTbar_And_Efficiency_BTagCaloCSVp087Triple = (TGraphAsymmErrors*) fTrig->Get("TTbar_And_Efficiency_BTagCaloCSVp087Triple");
+    TGraphAsymmErrors *TTbar_And_Efficiency_QuadPFCentralJetLooseID45 = (TGraphAsymmErrors*) fTrig->Get("TTbar_And_Efficiency_QuadPFCentralJetLooseID45");
+    
+        
     // declaring the output tree - use the output_tree class
     // output variables are defined inside there
     output_tree otree;
@@ -109,8 +148,8 @@ int main(int argc, char** argv)
         // cout << "JET 4 : " << jet4.pt << " " << jet4.eta << " " << jet4.genjet_pt << " " << endl;
         // cout << " -------------------------------------- " << endl;
 
-        // pair the jets
-        std::vector<jet_t> jets {jet1, jet2, jet3, jet4};
+        // pair the jets, using diagonal grouping
+	std::vector<jet_t> jets {jet1, jet2, jet3, jet4};
         std::vector<jet_t> result = bbbb_jets_idxs_BothClosestToDiagonal(&jets);
 
         TLorentzVector v_H1, v_H2, v_HH;
@@ -131,6 +170,77 @@ int main(int argc, char** argv)
         }
 
         v_HH = v_H1 + v_H2;
+
+	////////////////////////////////////
+	////// Scale factor calculation //// 
+	//////////////////////////////////// 
+	
+	float aJetPt[] = {jet1.pt, jet2.pt, jet3.pt, jet4.pt};  
+	std::vector<float> vJetPt (aJetPt, aJetPt+4);
+	std::sort(vJetPt.begin(), vJetPt.end());  // Sort in ascending order
+	
+	float aBtagScore[] = {jet1.btagscore, jet2.btagscore, jet3.btagscore, jet4.btagscore};
+	std::vector<float> vBtagScore (aBtagScore, aBtagScore + 4);
+	std::sort(vBtagScore.begin(), vBtagScore.end());
+
+        // Multiply all the relevant trigger efficiencies in this path (See TWiki)             
+        float fourhighestJetPt_sum = jet1.pt + jet2.pt + jet3.pt + jet4.pt;
+        float secondHighestJetPt_pt = vJetPt[2]; // Vectors in C++ are zero-indexed
+        float fourthHighestJetPt_pt = vJetPt[0];
+        float firstHighestBTagScore_BTagScore = vBtagScore[3]; 
+
+	// Efficiency from data
+
+        float effDataDouble90Quad30 = (SingleMuon_Double90Quad30_Efficiency_L1filter->Eval(fourhighestJetPt_sum) *
+                                       SingleMuon_Double90Quad30_Efficiency_QuadCentralJet30->Eval(fourthHighestJetPt_pt) *
+                                       SingleMuon_Double90Quad30_Efficiency_DoubleCentralJet90->Eval(secondHighestJetPt_pt) *
+                                       SingleMuon_Double90Quad30_Efficiency_BTagCaloCSVp087Triple->Eval(firstHighestBTagScore_BTagScore) *
+                                       SingleMuon_Double90Quad30_Efficiency_QuadPFCentralJetLooseID30->Eval(fourthHighestJetPt_pt) *
+                                       SingleMuon_Double90Quad30_Efficiency_DoublePFCentralJetLooseID90->Eval(secondHighestJetPt_pt)); 
+
+        float effDataQuad45 = (SingleMuon_Quad45_Efficiency_L1filter->Eval(fourhighestJetPt_sum) *
+                               SingleMuon_Quad45_Efficiency_QuadCentralJet45->Eval(fourthHighestJetPt_pt) *
+                               SingleMuon_Quad45_Efficiency_BTagCaloCSVp087Triple->Eval(firstHighestBTagScore_BTagScore) * 
+                               SingleMuon_Quad45_Efficiency_QuadPFCentralJetLooseID45->Eval(fourthHighestJetPt_pt));
+
+        float effDataQuad45_DJ = (SingleMuon_And_Efficiency_L1filterQuad45->Eval(fourhighestJetPt_sum) *
+                                  SingleMuon_And_Efficiency_QuadCentralJet45->Eval(fourthHighestJetPt_pt) *
+                                  SingleMuon_And_Efficiency_BTagCaloCSVp087Triple->Eval(firstHighestBTagScore_BTagScore) * 
+                                  SingleMuon_And_Efficiency_QuadPFCentralJetLooseID45->Eval(fourthHighestJetPt_pt)); 
+
+        float effDataDouble90Quad30_and_effDataQuad45 =  effDataDouble90Quad30 * effDataQuad45_DJ;
+
+
+        float effData = effDataDouble90Quad30 + effDataQuad45 - effDataDouble90Quad30_and_effDataQuad45;
+
+
+        // Efficiency from MC
+        float effMCDouble90Quad30 = (TTbar_Double90Quad30_Efficiency_L1filter->Eval(fourhighestJetPt_sum) *
+                                     TTbar_Double90Quad30_Efficiency_QuadCentralJet30->Eval(fourthHighestJetPt_pt) *
+                                     TTbar_Double90Quad30_Efficiency_DoubleCentralJet90->Eval(secondHighestJetPt_pt) *
+                                     TTbar_Double90Quad30_Efficiency_BTagCaloCSVp087Triple->Eval(firstHighestBTagScore_BTagScore) *
+                                     TTbar_Double90Quad30_Efficiency_QuadPFCentralJetLooseID30->Eval(fourthHighestJetPt_pt) *
+                                     TTbar_Double90Quad30_Efficiency_DoublePFCentralJetLooseID90->Eval(secondHighestJetPt_pt)); 
+
+        float effMCQuad45 = (TTbar_Quad45_Efficiency_L1filter->Eval(fourhighestJetPt_sum) *
+                             TTbar_Quad45_Efficiency_QuadCentralJet45->Eval(fourthHighestJetPt_pt) *
+                             TTbar_Quad45_Efficiency_BTagCaloCSVp087Triple->Eval(firstHighestBTagScore_BTagScore) *
+                             TTbar_Quad45_Efficiency_QuadPFCentralJetLooseID45->Eval(fourthHighestJetPt_pt));
+
+        float effMCQuad45_DJ = (TTbar_And_Efficiency_L1filterQuad45->Eval(fourhighestJetPt_sum) *
+                                TTbar_And_Efficiency_QuadCentralJet45->Eval(fourthHighestJetPt_pt) *
+                                TTbar_And_Efficiency_BTagCaloCSVp087Triple->Eval(firstHighestBTagScore_BTagScore) *
+                                TTbar_And_Efficiency_QuadPFCentralJetLooseID45->Eval(fourthHighestJetPt_pt));
+
+
+        float effMCDouble90Quad30_and_effMCQuad45 = effMCDouble90Quad30 * effMCQuad45_DJ; 
+
+        float effMC = effMCDouble90Quad30 + effMCQuad45 - effMCDouble90Quad30_and_effMCQuad45;  
+
+        float scale_factor = effData/effMC; 
+
+	
+
         // ========================================
         // ========================================
 
@@ -202,6 +312,8 @@ int main(int argc, char** argv)
         otree.rndm_1_ = **(itree.rndm_1);
         otree.rndm_2_ = **(itree.rndm_2);
         otree.rndm_3_ = **(itree.rndm_3);
+	
+	otree.trigger_SF_ = scale_factor;
 
         otree.fill();
     }

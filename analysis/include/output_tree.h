@@ -82,6 +82,8 @@ class output_tree {
         float rndm_2_;
         float rndm_3_;
 
+	// Scale factor
+	float trigger_SF_;
 
     private:
         std::unique_ptr<TTree> tree_;
@@ -163,6 +165,7 @@ void output_tree::init()
     tree_ -> Branch ("rndm_2", &rndm_2_);
     tree_ -> Branch ("rndm_3", &rndm_3_);
 
+    tree_ -> Branch ("trigger_SF", &trigger_SF_);
 }
 
 void output_tree::clear_vars()
@@ -225,6 +228,8 @@ void output_tree::clear_vars()
     rndm_1_ = -999;
     rndm_2_ = -999;
     rndm_3_ = -999;
+
+    trigger_SF_ = -999;
 }
 
 #endif

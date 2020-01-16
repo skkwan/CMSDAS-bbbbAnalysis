@@ -32,23 +32,24 @@ DEST_FLDR=`pwd`
 
 
 SAMPLES_MC=( \
-    QCD_HT100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
-    QCD_HT200to300_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
-    QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
-    QCD_HT500to700_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
-    QCD_HT700to1000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 \
-    QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
-    QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
-    QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 \
-    TT_TuneCUETP8M2T4_13TeV-powheg-pythia8 \
+#    QCD_HT100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
+#    QCD_HT200to300_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
+#    QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
+#    QCD_HT500to700_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
+#    QCD_HT700to1000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 \
+#    QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
+#    QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8  \
+#    QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 \
+#    TT_TuneCUETP8M2T4_13TeV-powheg-pythia8 \
 )
+
 
 SAMPLES_SIG=( \
     gg_HH_bbbb_SM             \
 )
 
 SAMPLES_DATA=( \
-    data_BTagCSV_Run2016_ALL \
+#    data_BTagCSV_Run2016_ALL \
 )
 
 

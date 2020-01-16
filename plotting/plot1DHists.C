@@ -47,7 +47,7 @@ TH1F* makeHistogram(TString variable,
   TH1F* hist = new TH1F(histName, histName, bins, low, high);
   
   if ((cut != "") && (weight != ""))
-    tree->Draw(variable+">>+"+histName, cut + "*" + weight);
+    tree->Draw(variable+">>+"+histName, cut * weight);
   else if (cut != "")
     tree->Draw(variable+">>+"+histName, cut);
   else if (weight != "")
@@ -134,7 +134,9 @@ int makeHistPlot(TH1F *h,
    to the output file directory. */
 
 int makeOverlayHistPlot(TH1F *h_data,
-			TH1F *h_MC_bkg,
+			TH1F *h_bkg,
+			TString labelData,
+			TString labelBkg,
 			TString variable,
 			TString outfileDirectory)
 {
@@ -151,36 +153,36 @@ int makeOverlayHistPlot(TH1F *h_data,
   h_data->SetMarkerStyle(8);
   h_data->SetLineWidth(1);
 
-  h_MC_bkg->SetMarkerColor(kRed-3);
-  h_MC_bkg->SetLineWidth(1);
-  h_MC_bkg->SetLineColor(kRed-10);
+  h_bkg->SetMarkerColor(kRed-3);
+  h_bkg->SetLineWidth(1);
+  h_bkg->SetLineColor(kRed-10);
 
   // To draw the error bars as shaded regions, we need to clone the 
   // original histogram. So we do this for the backgrond histogram:
-  TH1F *h_bkgClone = (TH1F*) h_MC_bkg->Clone("bkgClone");
+  TH1F *h_bkgClone = (TH1F*) h_bkg->Clone("bkgClone");
   h_bkgClone->SetFillStyle(3001);
   h_bkgClone->SetFillColor(kGray);
 
   // Suppress stats box                                                                             
   h_data->SetStats(0);
   h_bkgClone->SetStats(0);
-  h_MC_bkg->SetStats(0);
+  h_bkg->SetStats(0);
 
   // Set axes labels
-  h_MC_bkg->GetXaxis()->SetTitle(variable);
-  h_MC_bkg->GetYaxis()->SetTitle("Events");
+  h_bkg->GetXaxis()->SetTitle(variable);
+  h_bkg->GetYaxis()->SetTitle("Events");
 
   // Need this line to set the title
-  h_MC_bkg->SetTitle(variable);
+  h_bkg->SetTitle(variable);
 
   // Drawing
-  h_MC_bkg->Draw("HIST");     // draw background as normal histogram
+  h_bkg->Draw("HIST");     // draw background as normal histogram
   h_bkgClone->Draw("E3 SAME");  // E3 is the shading
   h_data->Draw("EP Z SAME");  // draw signal as dots
   
   // Format and draw the legend                          
-  leg->AddEntry(h_data, "Data", "l");
-  leg->AddEntry(h_MC_bkg, "MC background (tt and QCD)", "l");
+  leg->AddEntry(h_data, labelData, "l");
+  leg->AddEntry(h_bkg, labelBkg, "l");
   leg->Draw();
 
   Tcan->SaveAs(outfileDirectory);
@@ -200,44 +202,26 @@ int makeOverlayHistPlot(TH1F *h_data,
 
 int makeDataBkgHists(TString variable,
 		     TString outputFileDirectory,
-		     TCut cutData,
-		     TCut cutBkg,
-		     int nBins,
-		     int low,
-		     int high)
+		     TString treePath,
+		     TString dataDir, TCut dataCut, TCut dataWeight, TString dataLabel,
+		     TString bkgDir,  TCut bkgCut,  TCut bkgWeight,  TString bkgLabel,
+		     int nBins, int low, int high)
 {
   // Data: weight is 1
-  TH1F *h_data = makeHistogram(variable, "data", cutData, "1",
-			     "bbbbTree",
-			     "/uscms/home/menendez/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_data_BTagCSV_Run2016_ALL.root",
-			     nBins, low, high);
-  
-  // TT: weight is norm_weight times cross-section (xs) times the luminosity (in femtobarns)
-  TH1F *h_tt = makeHistogram(variable, "tt", cutBkg, "norm_weight * xs * 35920",
-				  "bbbbTree",
-				  "/uscms/home/menendez/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",
-				  nBins, low, high);
-
-  // QCD: weight is norm_weight times cross-section (xs) times the luminosity (in femtobarns)
-  TH1F *h_QCD = makeHistogram(variable, "qcd", cutBkg, "norm_weight * xs * 35920",
-			      "bbbbTree",
-			      "/uscms/home/skwan/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_QCD_HTall_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root",
-			      nBins, low, high);
-
-  // Plotting overlay: SM and backgrounds
-  TH1F *h_bkg = (TH1F*) h_tt->Clone("bkg");
-  h_bkg->Add(h_QCD);
+  TH1F *h_dataAll = makeHistogram(variable, "data",       dataCut, dataWeight, treePath, dataDir, nBins, low, high);
+  TH1F *h_dataBkg = makeHistogram(variable, "background", bkgCut, bkgWeight, treePath, bkgDir, nBins, low, high);
 
   // Create an output ROOT file, writing histograms to the file    
   TFile *fOut = new TFile(outputFileDirectory, "RECREATE"); 
   if ( fOut->IsOpen() ) printf("File opened successfully\n");
   fOut->cd(); 
-  h_data->Write();
-  h_bkg->Write();
+  h_dataAll->Write();
+  h_dataBkg->Write();
   fOut->Close();
 
-  makeOverlayHistPlot(h_data, h_bkg, variable,
-		      variable + "_overlay.png");
+  makeOverlayHistPlot(h_dataAll, h_dataBkg, dataLabel, bkgLabel, 
+		      variable, 
+		      variable + "_dataAll_and_dataBkg.png");
 
   return 0;
 }
@@ -246,9 +230,30 @@ int makeDataBkgHists(TString variable,
 
 int plot1DHists(void)
 {
+  TString desc = "data_and_databkg.root";
+  TString treePath = "bbbbTree";
 
-  makeDataBkgHists("H1_m", "H1_m_histograms.root", "", "", 300, 0, 800);
+  TString dataDir = "/uscms/home/lcadamur/nobackup/CMSDAS_bbbbAnalysis_sl7/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/background/data_4btag_Fabio.root";
+  TCut dataCut = "TMath::Sqrt((H1_m - 120.)**2 + (H2_m - 110.)**2) < 30."; // cut in signal region
+  TCut dataWeight = "1";
 
+  TString bkgDir = "/uscms/home/lcadamur/nobackup/CMSDAS_bbbbAnalysis_sl7/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/background/data_3btag_with_weights_VR_Fabio.root";
+  TCut bkgCut = "TMath::Sqrt((H1_m - 120.)**2 + (H2_m - 110.)**2) < 30.";
+  TCut bkgWeight = "bkg_model_w";
+
+  TString dataLabel = "Data";
+  TString bkgLabel = "Data-driven background estimate";
+
+  int nBins = 800;
+  int low = 0;
+  int high = 800;
+
+  makeDataBkgHists("H1_m", "H1_m_" + desc, treePath, dataDir, dataCut, dataWeight, dataLabel,
+		   bkgDir, bkgCut, bkgWeight, bkgLabel, nBins, low, high);
+  makeDataBkgHists("H2_m", "H2_m_" + desc, treePath, dataDir, dataCut, dataWeight, dataLabel,
+                   bkgDir, bkgCut, bkgWeight, bkgLabel, nBins, low, high);
+  makeDataBkgHists("HH_m", "HH_m_" + desc, treePath, dataDir, dataCut, dataWeight, dataLabel,
+		   bkgDir, bkgCut, bkgWeight, bkgLabel, nBins, low, high);
 
   return 0;
 }

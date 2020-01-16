@@ -188,7 +188,7 @@ void input_tree::init()
     luminosityBlock       = std::unique_ptr<TTreeReaderValue<unsigned int>>  (new TTreeReaderValue<unsigned int>   (fReader, "luminosityBlock"));
     event                 = std::unique_ptr<TTreeReaderValue<long long>>     (new TTreeReaderValue<long long>      (fReader, "event"));
     xs                    = std::unique_ptr<TTreeReaderValue<float>>         (new TTreeReaderValue<float>          (fReader, "xs"));
-    
+
     btag_SF               = std::unique_ptr<TTreeReaderValue<float>>         (new TTreeReaderValue<float>          (fReader, "btag_SF"));
     btag_SF_bup           = std::unique_ptr<TTreeReaderValue<float>>         (new TTreeReaderValue<float>          (fReader, "btag_SF_bup"));
     btag_SF_bdown         = std::unique_ptr<TTreeReaderValue<float>>         (new TTreeReaderValue<float>          (fReader, "btag_SF_bdown"));
