@@ -1,15 +1,10 @@
 /*****************************************************/
-/* plotHists.C                                       */
-/* Usage: root -l -b -q plotHists.C                  */
+/* plot1DHists.C                                     */
+/* Usage: root -l -b -q plot1DHists.C                */
 /* Description: Contains helper functions to create
    TH1Fs of any variable/ arbitrary cuts with the 
    weights/lumi/cross-sections necessary for the 
-   resulting histogram to be number of events.
-
-   The main function plotHists.C illustrates how to do
-   this for the H1_m variable, and writes the TH1Fs
-   to an output ROOT file and saves each sample's
-   histogram to images.                              */
+   resulting histogram to be number of events.       */
 /*****************************************************/
 
 #include "TCanvas.h"
@@ -23,8 +18,8 @@
 #include <iostream>
 #include <string>
 
-#ifndef MAKEHISTS_C_INCL
-#define MAKEHISTS_C_INCL
+#ifndef PLOT1DHISTS_C_INCL
+#define PLOT1DHISTS_C_INCL
 
 /*****************************************************/
 
@@ -37,8 +32,8 @@
 
 TH1F* makeHistogram(TString variable,
 		    TString histName,
-		    TString cut,
-		    TString weight,
+		    TCut cut,
+		    TCut weight,
 		    TString treePath,
 		    TString inputDirectory,
 		    int bins,
@@ -89,6 +84,11 @@ void applyLegStyle(TLegend *leg)
 
 /*****************************************************/
 
+
+
+
+/*****************************************************/
+
 /* Plots histogram TH1F h, with axes labels xLabel and
    yLabel, with the legend entry legendEntry and saves it
    to a file with the directory and name outfileDirectory
@@ -129,11 +129,13 @@ int makeHistPlot(TH1F *h,
 
 /*****************************************************/
 
+/* Takes TH1Fs h_data and h_MC_bkg, plots variable 
+   and saves plot with axes labels xLabel and yLabel
+   to the output file directory. */
 
 int makeOverlayHistPlot(TH1F *h_data,
 			TH1F *h_MC_bkg,
-			TString xLabel,
-			TString yLabel,
+			TString variable,
 			TString outfileDirectory)
 {
   TCanvas* Tcan = new TCanvas("Tcan","", 100, 20, 800, 600);
@@ -143,23 +145,39 @@ int makeOverlayHistPlot(TH1F *h_data,
   TLegend *leg = new TLegend(0.60,0.75,0.85,0.9);
   applyLegStyle(leg);
 
-  // Set axes labels                                                                                   
-  h_data->GetXaxis()->SetTitle(xLabel);
-  h_data->GetYaxis()->SetTitle(yLabel);
-
-  // Change colors
-  h_data->SetMarkerColor(kBlue);
+  // Change colors, marker style, etc.
+  h_data->SetMarkerColor(kAzure-3);
+  h_data->SetMarkerSize(0.4);
+  h_data->SetMarkerStyle(8);
   h_data->SetLineWidth(1);
-  h_data->SetLineColor(kBlue+2);
 
-  h_MC_bkg->SetMarkerColor(kRed);
+  h_MC_bkg->SetMarkerColor(kRed-3);
   h_MC_bkg->SetLineWidth(1);
-  h_MC_bkg->SetLineColor(kRed+2);
+  h_MC_bkg->SetLineColor(kRed-10);
 
-  h_data->Draw("E HIST");
-  h_MC_bkg->Draw("E HIST SAME");
+  // To draw the error bars as shaded regions, we need to clone the 
+  // original histogram. So we do this for the backgrond histogram:
+  TH1F *h_bkgClone = (TH1F*) h_MC_bkg->Clone("bkgClone");
+  h_bkgClone->SetFillStyle(3001);
+  h_bkgClone->SetFillColor(kGray);
+
+  // Suppress stats box                                                                             
+  h_data->SetStats(0);
+  h_bkgClone->SetStats(0);
+  h_MC_bkg->SetStats(0);
+
+  // Set axes labels
+  h_MC_bkg->GetXaxis()->SetTitle(variable);
+  h_MC_bkg->GetYaxis()->SetTitle("Events");
+
+  // Need this line to set the title
+  h_MC_bkg->SetTitle(variable);
+
+  // Drawing
+  h_MC_bkg->Draw("HIST");     // draw background as normal histogram
+  h_bkgClone->Draw("E3 SAME");  // E3 is the shading
+  h_data->Draw("EP Z SAME");  // draw signal as dots
   
-
   // Format and draw the legend                          
   leg->AddEntry(h_data, "Data", "l");
   leg->AddEntry(h_MC_bkg, "MC background (tt and QCD)", "l");
@@ -173,58 +191,67 @@ int makeOverlayHistPlot(TH1F *h_data,
   return 0;
 
 }
+
 /*****************************************************/
 
-/* Creates TH1F objects, writes them to a file, and plots
-   each one separately. */
+/* Creates TH1Fs of variable, saves them to a ROOT file
+   (one TH1F for data, one for signal, and one for
+   backgrond (QCD + TT), and plots them. */
 
-int plotHists(void)
+int makeDataBkgHists(TString variable,
+		     TString outputFileDirectory,
+		     TCut cutData,
+		     TCut cutBkg,
+		     int nBins,
+		     int low,
+		     int high)
 {
-  // The histograms will be written into this ROOT file.
-  TString outputFileDirectory = "histograms.root";
-
-  // SIGNAL: weight is 1
-  TH1F *h_H1_m_data = makeHistogram("H1_m", "H1_m_data", "", "1",
-				    "bbbbTree",
-				    "/uscms/home/menendez/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_data_BTagCSV_Run2016_ALL.root",
-				    300, 0, 800);
+  // Data: weight is 1
+  TH1F *h_data = makeHistogram(variable, "data", cutData, "1",
+			     "bbbbTree",
+			     "/uscms/home/menendez/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_data_BTagCSV_Run2016_ALL.root",
+			     nBins, low, high);
   
   // TT: weight is norm_weight times cross-section (xs) times the luminosity (in femtobarns)
-  TH1F *h_H1_m_tt = makeHistogram("H1_m", "H1_m_tt", "", "norm_weight * xs * 35920",
+  TH1F *h_tt = makeHistogram(variable, "tt", cutBkg, "norm_weight * xs * 35920",
 				  "bbbbTree",
 				  "/uscms/home/menendez/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",
-				  300, 0, 800);
+				  nBins, low, high);
 
   // QCD: weight is norm_weight times cross-section (xs) times the luminosity (in femtobarns)
-  TH1F *h_H1_m_QCD = makeHistogram("H1_m", "H1_m_QCD", "", "norm_weight * xs * 35920",
-				   "bbbbTree",
-				   "/uscms/home/skwan/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_QCD_HTall_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root",
-				   300, 0, 800);
-
-  // Create an output ROOT file, writing histograms to the file
-  TFile *fOut = new TFile(outputFileDirectory, "RECREATE");
-  if ( fOut->IsOpen() ) printf("File opened successfully\n");
-  fOut->cd();
-  h_H1_m_data->Write();
-  h_H1_m_tt->Write();
-  h_H1_m_QCD->Write();
-  fOut->Close();
-
-  // Plotting separately
-  makeHistPlot(h_H1_m_data, "H1_m_data", "Events", "Higgs 1 mass", "H1_m_data.png");
-  makeHistPlot(h_H1_m_tt, "H1_m_tt", "Events", "Higgs 1 mass", "H1_m_tt.png");
-  makeHistPlot(h_H1_m_QCD, "H1_m_QDC", "Events", "Higgs 1 mass", "H1_m_QCD.png");
+  TH1F *h_QCD = makeHistogram(variable, "qcd", cutBkg, "norm_weight * xs * 35920",
+			      "bbbbTree",
+			      "/uscms/home/skwan/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_QCD_HTall_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root",
+			      nBins, low, high);
 
   // Plotting overlay: SM and backgrounds
-  TH1F *bkg = (TH1F*) h_H1_m_tt->Clone("bkg");
-  bkg->Add(h_H1_m_QCD);
+  TH1F *h_bkg = (TH1F*) h_tt->Clone("bkg");
+  h_bkg->Add(h_QCD);
 
-  makeOverlayHistPlot(h_H1_m_data, bkg, "Higgs 1 mass", "Events",
-		      "overlay.png");
+  // Create an output ROOT file, writing histograms to the file    
+  TFile *fOut = new TFile(outputFileDirectory, "RECREATE"); 
+  if ( fOut->IsOpen() ) printf("File opened successfully\n");
+  fOut->cd(); 
+  h_data->Write();
+  h_bkg->Write();
+  fOut->Close();
+
+  makeOverlayHistPlot(h_data, h_bkg, variable,
+		      variable + "_overlay.png");
 
   return 0;
 }
 
+/*****************************************************/
+
+int plot1DHists(void)
+{
+
+  makeDataBkgHists("H1_m", "H1_m_histograms.root", "", "", 300, 0, 800);
+
+
+  return 0;
+}
 
 
 #endif
