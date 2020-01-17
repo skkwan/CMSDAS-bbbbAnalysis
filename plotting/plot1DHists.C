@@ -135,8 +135,10 @@ int makeHistPlot(TH1F *h,
 
 int makeOverlayHistPlot(TH1F *h_data,
 			TH1F *h_bkg,
+			TH1F *h_sig,
 			TString labelData,
 			TString labelBkg,
+			TString labelSig,
 			TString variable,
 			TString outfileDirectory)
 {
@@ -156,6 +158,11 @@ int makeOverlayHistPlot(TH1F *h_data,
   h_bkg->SetMarkerColor(kRed-3);
   h_bkg->SetLineWidth(1);
   h_bkg->SetLineColor(kRed-10);
+  
+  h_sig->SetMarkerColor(kGreen+2);
+  h_sig->SetMarkerSize(0.4);
+  h_sig->SetMarkerStyle(8);
+  h_sig->SetLineWidth(1);
 
   // To draw the error bars as shaded regions, we need to clone the 
   // original histogram. So we do this for the backgrond histogram:
@@ -167,6 +174,7 @@ int makeOverlayHistPlot(TH1F *h_data,
   h_data->SetStats(0);
   h_bkgClone->SetStats(0);
   h_bkg->SetStats(0);
+  h_sig->SetStats(0);
 
   // Set axes labels
   h_bkg->GetXaxis()->SetTitle(variable);
@@ -179,10 +187,12 @@ int makeOverlayHistPlot(TH1F *h_data,
   h_bkg->Draw("HIST");     // draw background as normal histogram
   h_bkgClone->Draw("E3 SAME");  // E3 is the shading
   h_data->Draw("EP Z SAME");  // draw signal as dots
+  h_sig->Draw("HIST SAME");
   
   // Format and draw the legend                          
   leg->AddEntry(h_data, labelData, "l");
   leg->AddEntry(h_bkg, labelBkg, "l");
+  leg->AddEntry(h_sig, labelSig, "l");
   leg->Draw();
 
   Tcan->SaveAs(outfileDirectory);
@@ -205,11 +215,13 @@ int makeDataBkgHists(TString variable,
 		     TString treePath,
 		     TString dataDir, TCut dataCut, TCut dataWeight, TString dataLabel,
 		     TString bkgDir,  TCut bkgCut,  TCut bkgWeight,  TString bkgLabel,
+		     TString sigDir,  TCut sigCut,  TCut sigWeight,  TString sigLabel,
 		     int nBins, int low, int high)
 {
   // Data: weight is 1
   TH1F *h_dataAll = makeHistogram(variable, "data",       dataCut, dataWeight, treePath, dataDir, nBins, low, high);
   TH1F *h_dataBkg = makeHistogram(variable, "background", bkgCut, bkgWeight, treePath, bkgDir, nBins, low, high);
+  TH1F *h_MCsig   = makeHistogram(variable, "signal",     sigCut, sigWeight, treePath, sigDir, nBins, low, high);
 
   // Create an output ROOT file, writing histograms to the file    
   TFile *fOut = new TFile(outputFileDirectory, "RECREATE"); 
@@ -219,7 +231,7 @@ int makeDataBkgHists(TString variable,
   h_dataBkg->Write();
   fOut->Close();
 
-  makeOverlayHistPlot(h_dataAll, h_dataBkg, dataLabel, bkgLabel, 
+  makeOverlayHistPlot(h_dataAll, h_dataBkg, h_MCsig, dataLabel, bkgLabel, sigLabel,
 		      variable, 
 		      variable + "_dataAll_and_dataBkg.png");
 
@@ -241,19 +253,29 @@ int plot1DHists(void)
   TCut bkgCut = "TMath::Sqrt((H1_m - 120.)**2 + (H2_m - 110.)**2) < 30.";
   TCut bkgWeight = "bkg_model_w";
 
-  TString dataLabel = "Data";
-  TString bkgLabel = "Data-driven background estimate";
+  TString sigDir = "/uscms/home/skwan/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/analysis/objects_gg_HH_bbbb_SM.root";
+  TCut sigCut = "TMath::Sqrt((H1_m - 120.)**2 + (H2_m - 110.)**2) < 30.";
+  TCut sigWeight = "norm_weight * xs * 35920 * btag_SF * trigger_SF";
+
+  TString dataLabel = "Data (Signal region)";
+  TString bkgLabel = "Data-driven background estimate (Signal region)";
+  TString sigLabel = "MC Signal (Signal region)";
 
   int nBins = 800;
   int low = 0;
   int high = 800;
 
+  /*
   makeDataBkgHists("H1_m", "H1_m_" + desc, treePath, dataDir, dataCut, dataWeight, dataLabel,
-		   bkgDir, bkgCut, bkgWeight, bkgLabel, nBins, low, high);
+		   bkgDir, bkgCut, bkgWeight, bkgLabel,
+		   sigDir, sigCut, sigWeight, sigLabel, nBins, low, high);
   makeDataBkgHists("H2_m", "H2_m_" + desc, treePath, dataDir, dataCut, dataWeight, dataLabel,
-                   bkgDir, bkgCut, bkgWeight, bkgLabel, nBins, low, high);
+                   bkgDir, bkgCut, bkgWeight, bkgLabel, 
+		   sigDir, sigCut, sigWeight, sigLabel, nBins, low, high);
+  */
   makeDataBkgHists("HH_m", "HH_m_" + desc, treePath, dataDir, dataCut, dataWeight, dataLabel,
-		   bkgDir, bkgCut, bkgWeight, bkgLabel, nBins, low, high);
+		   bkgDir, bkgCut, bkgWeight, bkgLabel,
+		   sigDir, sigCut, sigWeight, sigLabel, nBins, low, high);
 
   return 0;
 }

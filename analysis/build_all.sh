@@ -45,7 +45,6 @@ SAMPLES_MC=( \
 
 SAMPLES_SIG=( \
     gg_HH_bbbb_SM             \
-    gg_HH_bbbb_SM_withBDT    \
 )
 
 SAMPLES_DATA=( \
