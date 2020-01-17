@@ -11,6 +11,7 @@
 #include "TH1F.h"
 #include "TGraphAsymmErrors.h"
 
+
 #include "analysis_utils.h" // jet_t, init_jet_t
 #include "input_tree.h"
 #include "output_tree.h"
@@ -32,6 +33,7 @@ int main(int argc, char** argv)
     string inputFile  = argv[1];
     string outputFile = argv[2];    
 
+    TFile *fTrig =  TFile::Open("/uscms/home/skwan/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/trigger/TriggerEfficiencies.root");
     cout << "[INFO] Input  file: " << inputFile << endl;
     TFile* fIn = TFile::Open(inputFile.c_str());
     TTree* tIn = (TTree*) fIn->Get("bbbbTree");
@@ -57,7 +59,7 @@ int main(int argc, char** argv)
     const float btag_WP_medium = 0.3093; // for DeepJet
 
     // Open the file with the histograms needed for the trigger efficiency and scale factors
-    TFile *fTrig =  TFile::Open("/uscms/home/skwan/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/trigger/TriggerEfficiencies.root");
+    //TFile *fTrig =  TFile::Open("/uscms/home/skwan/nobackup/HHbbbb_exercise/CMSSW_10_2_18/src/CMSDAS-bbbbAnalysis/trigger/TriggerEfficiencies.root");
     TGraphAsymmErrors *SingleMuon_Double90Quad30_Efficiency_L1filter = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Double90Quad30_Efficiency_L1filter");
     TGraphAsymmErrors *SingleMuon_Double90Quad30_Efficiency_QuadCentralJet30 = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Double90Quad30_Efficiency_QuadCentralJet30");
     TGraphAsymmErrors *SingleMuon_Double90Quad30_Efficiency_DoubleCentralJet90 = (TGraphAsymmErrors*) fTrig->Get("SingleMuon_Double90Quad30_Efficiency_DoubleCentralJet90");
@@ -239,7 +241,9 @@ int main(int argc, char** argv)
 
         float scale_factor = effData/effMC; 
 
-	
+	if (effMC == 0)
+	  printf("%f = effMC \n");
+	//	printf("%f = scale factor\n", scale_factor);
 
         // ========================================
         // ========================================

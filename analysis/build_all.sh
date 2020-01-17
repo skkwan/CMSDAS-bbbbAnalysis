@@ -43,9 +43,9 @@ SAMPLES_MC=( \
 #    TT_TuneCUETP8M2T4_13TeV-powheg-pythia8 \
 )
 
-
 SAMPLES_SIG=( \
     gg_HH_bbbb_SM             \
+    gg_HH_bbbb_SM_withBDT    \
 )
 
 SAMPLES_DATA=( \
@@ -112,3 +112,5 @@ for sample in ${SAMPLES_DATA[*]}; do
         # rm ${TMP_FLDR}/dasntuples_${sample}.root
     )&
 done
+
+
